@@ -11,7 +11,7 @@ FASTLED_USING_NAMESPACE
 #define NUM_LEDS_WINDOW    21
 #define NUM_LEDS_OUTLINE   144
 #define NUM_LEDS_RIM 15
-#define BRIGHTNESS 255
+#define BRIGHTNESS 128
 CRGB leds_window[NUM_LEDS_WINDOW];
 CRGB leds_outline[NUM_LEDS_OUTLINE];
 CRGB leds_rim[NUM_LEDS_RIM];
@@ -37,8 +37,6 @@ void loop() {
   static uint8_t hue = 0;
 
   static uint8_t hue_cylon = 0;
-
-  static uint8_t hue_outline = 0;
 
   static int blinky = HIGH;
 
@@ -68,43 +66,30 @@ void loop() {
 
   // RIM (the 15 little windows)
 
+  static uint8_t cypos = 0;
+
   EVERY_N_MILLIS(10) {
+     fadeToBlackBy(leds_rim, NUM_LEDS_RIM, 16);
+  }
+  
+  EVERY_N_MILLIS(40) {
 
-    uint16_t cypos = scale8( cubicwave8( millis() / 10 ), NUM_LEDS_RIM - 1 );
-    
-    fadeToBlackBy(leds_rim, NUM_LEDS_RIM, 16);
+    if (cypos < NUM_LEDS_RIM) {
+      leds_rim[NUM_LEDS_RIM - 1 - cypos] = CHSV(hue_cylon, 255, 255);
+    }
 
-    leds_rim[cypos] = CHSV(hue_cylon, 255, 255);
+    cypos = (cypos + 1) % (NUM_LEDS_RIM * 3 / 2);
    
   }
 
-  EVERY_N_MILLIS(60) {
+  EVERY_N_MILLIS(150) {
     hue_cylon++;
   }
 
 
   // OUTLINE
 
-  static uint16_t pos1 = 0;
-  static uint16_t pos2 = NUM_LEDS_OUTLINE / 2;
-  
-  EVERY_N_MILLIS(2) {
-
-    pos1 = (pos1 + 1) % (NUM_LEDS_OUTLINE-1);
-    pos2 = (pos2 + 1) % (NUM_LEDS_OUTLINE-1);
-
-    leds_outline[pos1+1] = 
-    leds_outline[pos2+1] =
-    CHSV(hue_outline, 255, 255);
-       
-    fadeToBlackBy(leds_outline, NUM_LEDS_OUTLINE, 16);
-    
-  }
-
-  EVERY_N_MILLIS(50) {
-    hue_outline++;
-  }
-
+  fill_solid(leds_outline, NUM_LEDS_OUTLINE, CHSV(hue_cylon, 64, beatsin8(17, 50, 255)));
 
 
   EVERY_N_MILLIS(500) {
